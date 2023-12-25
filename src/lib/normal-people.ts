@@ -32,12 +32,28 @@ export class NP {
 
         // Validate input
         const input = procedure._input ?? z.null();
-        const output = input.safeParse(data);
+        const parsedInput = input.safeParse(data);
 
         // Throw error if input fails validation
-        if (!output.success) throw new Error(output.error.message);
+        if (!parsedInput.success) throw new Error(parsedInput.error.message);
 
-        // Generate output based on input
+        // Run the middleware
+        const middleware = procedure._middleware;
+        let middlewareFailed = false;
+        await Promise.resolve(
+          middleware?.({
+            input: parsedInput.data,
+            next: () => {
+              middlewareFailed = false;
+            },
+          }),
+        );
+
+        // Throw error if middleware fails
+        // @TODO: add a way to handle middleware errors
+        if (middlewareFailed) throw new NPError('Middleware failed.');
+
+        // Generate output using the handler + input
         const response = handler(input);
 
         // Convert response to a valid output for bun
@@ -51,8 +67,9 @@ export class NP {
         }
 
         // Return the error
+        const status = error instanceof HttpError ? error.code : 500;
         return new Response(`Error: ${error.message}`, {
-          status: error instanceof HttpError ? error.code : 500,
+          status: status >= 400 && status < 600 ? status : 500,
         });
       }
     };

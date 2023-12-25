@@ -4,6 +4,7 @@ export class Procedure {
   _path?: string;
   _method?: string;
   _input?: z.Schema;
+  _middleware?: (opts: any) => void;
   _handler?: (opts: any) => any;
 
   constructor(
@@ -11,12 +12,14 @@ export class Procedure {
       _path?: string;
       _method?: string;
       _input?: z.Schema;
+      _middleware?: (opts: any) => void;
       _handler?: (opts: any) => any;
     } = {},
   ) {
     this._path = opts._path;
     this._method = opts._method;
     this._input = opts._input;
+    this._middleware = opts._middleware;
     this._handler = opts._handler;
   }
 
@@ -55,8 +58,16 @@ export class Procedure {
     });
   }
 
-  use(_method: (opts: any) => void) {
-    return this;
+  /**
+   * The middleware of the procedure (e.g. (opts) => { console.log(opts) })
+   * @param middleware
+   * @returns
+   */
+  use(middleware: (opts: any) => void) {
+    return new Procedure({
+      ...this,
+      _middleware: middleware,
+    });
   }
 
   query(handler: (opts: any) => any) {

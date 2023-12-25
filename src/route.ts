@@ -43,19 +43,17 @@ export const appRouter = t.router({
       };
     }),
 
-  // createUser: authorizedProcedure
-  //   .endpoint("/user/:id")
-  //   .mutate(() => {
-  //     return {
-  //       message: 'hello world',
-  //     };
-  //   }),
+  createUser: authorizedProcedure.path('/user/:id').mutate(() => {
+    return {
+      message: 'hello world',
+    };
+  }),
 
-  // goodbye: authorizedProcedure.mutate(async (opts) => {
-  //   await opts.ctx.signGuestBook();
+  goodbye: authorizedProcedure.mutate(async (opts) => {
+    await opts.ctx.signGuestBook();
 
-  //   return {
-  //     message: 'goodbye!',
-  //   };
-  // }),
+    return {
+      message: 'goodbye!',
+    };
+  }),
 });
